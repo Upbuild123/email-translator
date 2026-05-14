@@ -83,10 +83,14 @@ def translate_image(image_bytes: bytes) -> dict:
     prompt = textwrap.dedent("""
         You are a Japanese language expert helping an English-speaking parent understand a Japanese school announcement board.
 
-        The image contains Japanese text. Please respond in this exact format:
+        The image contains Japanese text. Your job is to make the English feel completely natural — as if it were written in English from the start, not translated. Do NOT translate word-for-word. Rephrase, reorder, and rewrite as needed so it reads the way a native English speaker would actually say it.
+
+        For example, if the Japanese says something like "明日は運動会があります。体操服を忘れずに持参してください。", a word-for-word translation would be "Tomorrow there is a sports day. Please do not forget to bring your gym clothes." A natural English version would be "Tomorrow is Sports Day — make sure to bring your gym clothes!"
+
+        Respond in this exact format:
 
         ENGLISH
-        <A complete, natural English version of the entire announcement. Write it as a native English speaker would — fluid, clear, and easy to read. Do not translate word-for-word. Capture the full meaning, tone, and intent as one cohesive piece of writing.>
+        <The full announcement rewritten in natural, fluent English. One cohesive piece of writing. No stiff or literal phrasing.>
 
         JAPANESE
         <All the original Japanese text exactly as written in the image>
