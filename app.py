@@ -120,7 +120,9 @@ def translate_image(image_bytes: bytes) -> dict:
 # ── Email sending ──────────────────────────────────────────────────────────────
 def send_email(translation_text: str) -> None:
     msg = MIMEMultipart("alternative")
-    msg["Subject"] = "📋 School Announcement Translation"
+    from datetime import date
+    today = date.today()
+    msg["Subject"] = today.strftime("%a %-d %b School Announcements")
     msg["From"]    = GMAIL_ADDRESS
     msg["To"]      = GMAIL_ADDRESS
 
