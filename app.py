@@ -81,23 +81,21 @@ p, li, label { color: #333 !important; }
 def translate_image(image_bytes: bytes) -> dict:
     b64 = base64.b64encode(image_bytes).decode()
     prompt = textwrap.dedent("""
-        You are a Japanese language expert. The image contains Japanese text (e.g. from a school announcement board).
+        You are a Japanese language expert helping an English-speaking parent understand a Japanese school announcement board.
 
         Please:
         1. Extract ALL Japanese text visible in the image.
-        2. For each distinct section or sentence, provide:
+        2. For each distinct section or announcement, provide:
            - The original Japanese (kanji/kana as written)
-           - Hiragana/katakana reading
-           - Romaji (Hepburn romanization)
-           - English translation
+           - A natural, fluent English translation — written the way a native English speaker would actually say it.
+             Do NOT translate word-for-word. Capture the meaning, tone, and intent naturally.
+             If it's a reminder, make it sound like a reminder. If it's a date or event, make it clear and direct.
 
         Format your response EXACTLY like this for each item:
 
         ---
         Original: <japanese text>
-        Reading: <hiragana/katakana>
-        Romaji: <romaji>
-        English: <english translation>
+        English: <natural english translation>
         ---
 
         If there are multiple sections or announcements, repeat the block for each one.
@@ -143,10 +141,8 @@ def send_email(translation_text: str) -> None:
         html_blocks += f"""
         <div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;
                     padding:1rem 1.2rem;margin-bottom:1rem;font-family:sans-serif;">
-            <p style="font-size:1.2rem;margin:0 0 0.5rem 0">{lines.get('Original','')}</p>
-            <p style="color:#555;margin:0.2rem 0"><b>Reading:</b> {lines.get('Reading','')}</p>
-            <p style="color:#555;margin:0.2rem 0"><b>Romaji:</b> {lines.get('Romaji','')}</p>
-            <p style="color:#1d4ed8;margin:0.4rem 0 0 0;font-weight:600">
+            <p style="color:#555;font-size:0.9rem;margin:0 0 0.5rem 0">{lines.get('Original','')}</p>
+            <p style="color:#111;margin:0;font-size:1.05rem;font-weight:600">
                 {lines.get('English','')}
             </p>
         </div>
