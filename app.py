@@ -178,6 +178,10 @@ elif not GMAIL_APP_PASS:
     st.error("GMAIL_APP_PASS not set.")
 else:
     photo = st.camera_input("")
+    with st.expander("Or upload a photo"):
+        uploaded = st.file_uploader("", type=["jpg", "jpeg", "png"], label_visibility="collapsed")
+
+    photo = photo or uploaded
 
     if photo is not None:
         with st.spinner("Reading Japanese and translating..."):
