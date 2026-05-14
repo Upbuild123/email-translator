@@ -127,14 +127,17 @@ def send_email(translation_text: str) -> None:
     plain = f"School Announcement Translation\n\n{translation_text}"
 
     # HTML version — nicely formatted
+    headings = ("ENGLISH", "JAPANESE", "READING", "ROMAJI")
+
     def _extract_section(text: str, heading: str) -> str:
         lines = text.splitlines()
         result, capture = [], False
         for line in lines:
-            if line.strip() == heading:
+            clean = line.strip().upper().strip("*:#")
+            if clean == heading:
                 capture = True
                 continue
-            if capture and line.strip() in ("ENGLISH", "JAPANESE", "READING", "ROMAJI"):
+            if capture and clean in headings:
                 break
             if capture:
                 result.append(line)
@@ -152,12 +155,12 @@ def send_email(translation_text: str) -> None:
             <p style="color:#111;font-size:1.05rem;line-height:1.6;margin:0">{english}</p>
         </div>
         <hr style="border:none;border-top:1px solid #e5e7eb;margin:1.5rem 0">
-        <p style="color:#555;font-size:0.9rem;margin:0 0 0.3rem 0"><b>Japanese</b></p>
-        <p style="color:#333;margin:0 0 1rem 0">{japanese}</p>
         <p style="color:#555;font-size:0.9rem;margin:0 0 0.3rem 0"><b>Reading</b></p>
         <p style="color:#333;margin:0 0 1rem 0">{reading}</p>
         <p style="color:#555;font-size:0.9rem;margin:0 0 0.3rem 0"><b>Romaji</b></p>
-        <p style="color:#333;margin:0">{romaji}</p>
+        <p style="color:#333;margin:0 0 1rem 0">{romaji}</p>
+        <p style="color:#555;font-size:0.9rem;margin:0 0 0.3rem 0"><b>Japanese</b></p>
+        <p style="color:#333;margin:0">{japanese}</p>
     </body></html>
     """
 
@@ -196,13 +199,15 @@ else:
                     st.markdown('<div class="status-box">✅ Translation sent to <b>michael.sloyer@gmail.com</b></div>', unsafe_allow_html=True)
                     st.divider()
                     def _extract(text, heading):
+                        _headings = ("ENGLISH", "JAPANESE", "READING", "ROMAJI")
                         lines = text.splitlines()
                         result, capture = [], False
                         for line in lines:
-                            if line.strip() == heading:
+                            clean = line.strip().upper().strip("*:#")
+                            if clean == heading:
                                 capture = True
                                 continue
-                            if capture and line.strip() in ("ENGLISH", "JAPANESE", "READING", "ROMAJI"):
+                            if capture and clean in _headings:
                                 break
                             if capture:
                                 result.append(line)
@@ -210,12 +215,12 @@ else:
 
                     st.markdown(_extract(translation, "ENGLISH"))
                     st.divider()
-                    st.caption("**Japanese**")
-                    st.markdown(_extract(translation, "JAPANESE"))
                     st.caption("**Reading**")
                     st.markdown(_extract(translation, "READING"))
                     st.caption("**Romaji**")
                     st.markdown(_extract(translation, "ROMAJI"))
+                    st.caption("**Japanese**")
+                    st.markdown(_extract(translation, "JAPANESE"))
 
             except Exception as e:
                 st.markdown(f'<div class="error-box">❌ Error: {e}</div>', unsafe_allow_html=True)
