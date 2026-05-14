@@ -16,10 +16,7 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 
 import streamlit as st
-import streamlit.components.v1 as components
 from openai import OpenAI
-
-_rear_camera = components.declare_component("rear_camera", path="camera_component")
 
 # ── Env ────────────────────────────────────────────────────────────────────────
 def _load_env() -> None:
@@ -180,14 +177,12 @@ if not OPENAI_API_KEY:
 elif not GMAIL_APP_PASS:
     st.error("GMAIL_APP_PASS not set.")
 else:
-    photo_data = _rear_camera()
+    photo = st.camera_input("")
 
-    if photo_data is not None:
-        header, encoded = photo_data.split(",", 1)
-        image_bytes = base64.b64decode(encoded)
+    if photo is not None:
         with st.spinner("Reading Japanese and translating..."):
             try:
-                result = translate_image(image_bytes)
+                result = translate_image(photo.getvalue())
                 translation = result["raw"]
 
                 if "NO_JAPANESE_FOUND" in translation:
