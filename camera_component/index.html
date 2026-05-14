@@ -20,20 +20,29 @@
 </style>
 </head>
 <body>
-  <input type="file" accept="image/*" capture="environment" id="cam" style="display:none" onchange="handleFile(this)">
+  <input type="file" accept="image/*" capture="environment" id="cam" style="display:none">
   <button onclick="document.getElementById('cam').click()">📷 Take Photo</button>
-  <script src="https://unpkg.com/streamlit-component-lib@2.0.0/dist/streamlit-component-lib.js"></script>
   <script>
-    Streamlit.setFrameHeight(52);
-    function handleFile(input) {
-      const file = input.files[0];
+    function sendValue(val) {
+      window.parent.postMessage({ type: "streamlit:setComponentValue", value: val }, "*");
+    }
+
+    window.addEventListener("message", function(e) {
+      if (e.data.type === "streamlit:render") {
+        window.parent.postMessage({ type: "streamlit:setFrameHeight", height: 52 }, "*");
+      }
+    });
+
+    // Tell Streamlit the component is ready
+    window.parent.postMessage({ type: "streamlit:componentReady", apiVersion: 1 }, "*");
+
+    document.getElementById("cam").addEventListener("change", function() {
+      const file = this.files[0];
       if (!file) return;
       const reader = new FileReader();
-      reader.onload = function(e) {
-        Streamlit.setComponentValue(e.target.result);
-      };
+      reader.onload = function(e) { sendValue(e.target.result); };
       reader.readAsDataURL(file);
-    }
+    });
   </script>
 </body>
 </html>

@@ -19,6 +19,8 @@ import streamlit as st
 import streamlit.components.v1 as components
 from openai import OpenAI
 
+_rear_camera = components.declare_component("rear_camera", path="camera_component")
+
 # ── Env ────────────────────────────────────────────────────────────────────────
 def _load_env() -> None:
     env = Path(__file__).parent / ".env"
@@ -176,7 +178,6 @@ if not OPENAI_API_KEY:
 elif not GMAIL_APP_PASS:
     st.error("GMAIL_APP_PASS not set.")
 else:
-    _rear_camera = components.declare_component("rear_camera", path="camera_component")
     photo_data = _rear_camera()
 
     if photo_data is not None:
