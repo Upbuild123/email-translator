@@ -175,7 +175,7 @@ if not OPENAI_API_KEY:
 elif not GMAIL_APP_PASS:
     st.error("GMAIL_APP_PASS not set.")
 else:
-    photo = st.camera_input("")
+    photo = st.file_uploader("", type=["jpg", "jpeg", "png"], label_visibility="collapsed")
 
     if photo is not None:
         with st.spinner("Reading Japanese and translating..."):
