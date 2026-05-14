@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { display: flex; justify-content: center; padding: 4px; background: transparent; }
+  button {
+    width: 100%;
+    background: #111;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 1rem;
+    padding: 0.6rem 1.4rem;
+    cursor: pointer;
+    font-family: 'Inter', sans-serif;
+  }
+  button:hover { opacity: 0.82; }
+</style>
+</head>
+<body>
+  <input type="file" accept="image/*" capture="environment" id="cam" style="display:none" onchange="handleFile(this)">
+  <button onclick="document.getElementById('cam').click()">📷 Take Photo</button>
+  <script src="https://unpkg.com/streamlit-component-lib@2.0.0/dist/streamlit-component-lib.js"></script>
+  <script>
+    Streamlit.setFrameHeight(52);
+    function handleFile(input) {
+      const file = input.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        Streamlit.setComponentValue(e.target.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  </script>
+</body>
+</html>
