@@ -83,22 +83,20 @@ def translate_image(image_bytes: bytes) -> dict:
     prompt = textwrap.dedent("""
         You are a Japanese language expert helping an English-speaking parent understand a Japanese school announcement board.
 
-        Please:
-        1. Extract ALL Japanese text visible in the image.
-        2. For each distinct section or announcement, provide:
-           - The original Japanese (kanji/kana as written)
-           - A natural, fluent English translation — written the way a native English speaker would actually say it.
-             Do NOT translate word-for-word. Capture the meaning, tone, and intent naturally.
-             If it's a reminder, make it sound like a reminder. If it's a date or event, make it clear and direct.
+        The image contains Japanese text. Please respond in this exact format:
 
-        Format your response EXACTLY like this for each item:
+        ENGLISH
+        <A complete, natural English version of the entire announcement. Write it as a native English speaker would — fluid, clear, and easy to read. Do not translate word-for-word. Capture the full meaning, tone, and intent as one cohesive piece of writing.>
 
-        ---
-        Original: <japanese text>
-        English: <natural english translation>
-        ---
+        JAPANESE
+        <All the original Japanese text exactly as written in the image>
 
-        If there are multiple sections or announcements, repeat the block for each one.
+        READING
+        <The full hiragana/katakana reading of the Japanese text>
+
+        ROMAJI
+        <The full romaji (Hepburn romanization) of the Japanese text>
+
         If no Japanese text is found, say: NO_JAPANESE_FOUND
     """).strip()
 
@@ -127,31 +125,37 @@ def send_email(translation_text: str) -> None:
     plain = f"School Announcement Translation\n\n{translation_text}"
 
     # HTML version — nicely formatted
-    blocks = [b.strip() for b in translation_text.split("---") if b.strip()]
-    html_blocks = ""
-    for block in blocks:
-        lines = {
-            k.strip(): v.strip()
-            for line in block.splitlines()
-            if ":" in line
-            for k, v in [line.split(":", 1)]
-        }
-        if not lines:
-            continue
-        html_blocks += f"""
-        <div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;
-                    padding:1rem 1.2rem;margin-bottom:1rem;font-family:sans-serif;">
-            <p style="color:#555;font-size:0.9rem;margin:0 0 0.5rem 0">{lines.get('Original','')}</p>
-            <p style="color:#111;margin:0;font-size:1.05rem;font-weight:600">
-                {lines.get('English','')}
-            </p>
-        </div>
-        """
+    def _extract_section(text: str, heading: str) -> str:
+        lines = text.splitlines()
+        result, capture = [], False
+        for line in lines:
+            if line.strip() == heading:
+                capture = True
+                continue
+            if capture and line.strip() in ("ENGLISH", "JAPANESE", "READING", "ROMAJI"):
+                break
+            if capture:
+                result.append(line)
+        return "\n".join(result).strip()
+
+    english = _extract_section(translation_text, "ENGLISH")
+    japanese = _extract_section(translation_text, "JAPANESE")
+    reading = _extract_section(translation_text, "READING")
+    romaji = _extract_section(translation_text, "ROMAJI")
 
     html = f"""
     <html><body style="font-family:sans-serif;max-width:600px;margin:auto;padding:1rem">
         <h2 style="color:#111">📋 School Announcement Translation</h2>
-        {html_blocks if html_blocks else f"<pre>{translation_text}</pre>"}
+        <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:1.2rem 1.4rem;margin-bottom:1.5rem">
+            <p style="color:#111;font-size:1.05rem;line-height:1.6;margin:0">{english}</p>
+        </div>
+        <hr style="border:none;border-top:1px solid #e5e7eb;margin:1.5rem 0">
+        <p style="color:#555;font-size:0.9rem;margin:0 0 0.3rem 0"><b>Japanese</b></p>
+        <p style="color:#333;margin:0 0 1rem 0">{japanese}</p>
+        <p style="color:#555;font-size:0.9rem;margin:0 0 0.3rem 0"><b>Reading</b></p>
+        <p style="color:#333;margin:0 0 1rem 0">{reading}</p>
+        <p style="color:#555;font-size:0.9rem;margin:0 0 0.3rem 0"><b>Romaji</b></p>
+        <p style="color:#333;margin:0">{romaji}</p>
     </body></html>
     """
 
@@ -185,11 +189,27 @@ else:
                     send_email(translation)
                     st.markdown('<div class="status-box">✅ Translation sent to <b>michael.sloyer@gmail.com</b></div>', unsafe_allow_html=True)
                     st.divider()
-                    st.markdown("**Preview:**")
-                    blocks = [b.strip() for b in translation.split("---") if b.strip()]
-                    for block in blocks:
-                        st.markdown(block)
-                        st.divider()
+                    def _extract(text, heading):
+                        lines = text.splitlines()
+                        result, capture = [], False
+                        for line in lines:
+                            if line.strip() == heading:
+                                capture = True
+                                continue
+                            if capture and line.strip() in ("ENGLISH", "JAPANESE", "READING", "ROMAJI"):
+                                break
+                            if capture:
+                                result.append(line)
+                        return "\n".join(result).strip()
+
+                    st.markdown(_extract(translation, "ENGLISH"))
+                    st.divider()
+                    st.caption("**Japanese**")
+                    st.markdown(_extract(translation, "JAPANESE"))
+                    st.caption("**Reading**")
+                    st.markdown(_extract(translation, "READING"))
+                    st.caption("**Romaji**")
+                    st.markdown(_extract(translation, "ROMAJI"))
 
             except Exception as e:
                 st.markdown(f'<div class="error-box">❌ Error: {e}</div>', unsafe_allow_html=True)
